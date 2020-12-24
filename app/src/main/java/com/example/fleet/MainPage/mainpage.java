@@ -21,6 +21,7 @@ import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.example.fleet.LoginAndSignup.LoginActivity;
+import com.example.fleet.LoginAndSignup.Signup_Page;
 import com.example.fleet.R;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -36,38 +37,34 @@ import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
-public class mainpage extends FragmentActivity implements OnMapReadyCallback {
+public class mainpage extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener {
 
-    Button back, search;
-    PlacesClient placesClient;
+    private Button back, search, logout_btn;
+    private PlacesClient placesClient;
     public static String[] loc = new String[3];
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        check_authentication();
         setContentView(R.layout.activity_mainpage);
 
+
         back = findViewById(R.id.back_button);
+        back.setOnClickListener(this);
+
         search = findViewById(R.id.search_button);
+        search.setOnClickListener(this);
 
-        back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent b = new Intent(mainpage.this, LoginActivity.class);
-                startActivity(b);
-            }
-        });
-
-        search.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                display_track(loc[0],loc[1]);
-            }
-        });
+        logout_btn = findViewById(R.id.Logout_button);
+        logout_btn.setOnClickListener(this);
 
         final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -75,6 +72,22 @@ public class mainpage extends FragmentActivity implements OnMapReadyCallback {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        check_authentication();
+    }
+
+    private void check_authentication() {
+        mAuth  = FirebaseAuth.getInstance();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+
+        }else{
+            Intent b = new Intent(mainpage.this, LoginActivity.class);
+            startActivity(b);
+        }
+    }
 
 
     @Override
@@ -133,11 +146,6 @@ public class mainpage extends FragmentActivity implements OnMapReadyCallback {
                         Toast.makeText(mainpage.this, ""+status.getStatusMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
-
-
-
-
-
     }
 
     private void display_track(String source, String destination){
@@ -155,6 +163,27 @@ public class mainpage extends FragmentActivity implements OnMapReadyCallback {
             intent.setFlags(intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
 
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch(view.getId()){
+            case R.id.Logout_button: {
+                FirebaseAuth.getInstance().signOut();
+                Intent b = new Intent(mainpage.this, LoginActivity.class);
+                startActivity(b);
+                break;
+            }
+            case R.id.back_button: {
+                Intent b = new Intent(mainpage.this, LoginActivity.class);
+                startActivity(b);
+                break;
+            }
+            case R.id.search_button: {
+                display_track(loc[0],loc[1]);
+                break;
+            }
         }
     }
 }
